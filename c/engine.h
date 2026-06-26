@@ -100,7 +100,6 @@ typedef struct LiteRtLmConversationConfig LiteRtLmConversationConfig;
 
 // Represents the type of sampler.
 typedef enum {
-  kLiteRtLmSamplerTypeUnspecified = 0,
   // Probabilistically pick among the top k tokens.
   kLiteRtLmSamplerTypeTopK = 1,
   // Probabilistically pick among the tokens such that the sum is greater
@@ -110,14 +109,45 @@ typedef enum {
   kLiteRtLmSamplerTypeGreedy = 3,
 } LiteRtLmSamplerType;
 
-// Parameters for the sampler.
-typedef struct {
-  LiteRtLmSamplerType type;
-  int32_t top_k;
-  float top_p;
-  float temperature;
-  int32_t seed;
-} LiteRtLmSamplerParams;
+// Opaque pointer for LiteRT LM Sampler Parameters.
+// Use `litert_lm_sampler_params_delete` to free memory.
+typedef struct LiteRtLmSamplerParams LiteRtLmSamplerParams;
+
+// Creates LiteRT LM Sampler Parameters with a specific sampler type.
+// The caller is responsible for destroying the parameters using
+// `litert_lm_sampler_params_delete`.
+//
+// @param type The sampler type to use.
+// @return A pointer to the created parameters, or NULL on failure.
+LITERT_LM_C_API_EXPORT
+LiteRtLmSamplerParams* litert_lm_sampler_params_create(
+    LiteRtLmSamplerType type);
+
+// Destroys LiteRT LM Sampler Parameters.
+//
+// @param params The parameters to destroy.
+LITERT_LM_C_API_EXPORT
+void litert_lm_sampler_params_delete(LiteRtLmSamplerParams* params);
+
+// Sets the top-k value.
+LITERT_LM_C_API_EXPORT
+void litert_lm_sampler_params_set_top_k(LiteRtLmSamplerParams* params,
+                                        int32_t top_k);
+
+// Sets the top-p value.
+LITERT_LM_C_API_EXPORT
+void litert_lm_sampler_params_set_top_p(LiteRtLmSamplerParams* params,
+                                        float top_p);
+
+// Sets the temperature.
+LITERT_LM_C_API_EXPORT
+void litert_lm_sampler_params_set_temperature(LiteRtLmSamplerParams* params,
+                                              float temperature);
+
+// Sets the seed.
+LITERT_LM_C_API_EXPORT
+void litert_lm_sampler_params_set_seed(LiteRtLmSamplerParams* params,
+                                       int32_t seed);
 
 // Creates a LiteRT LM Session Config.
 // The caller is responsible for destroying the config using

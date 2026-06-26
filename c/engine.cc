@@ -55,6 +55,14 @@ struct LiteRtLmInputData {
   litert::lm::InputData data;
 };
 
+struct LiteRtLmSamplerParams {
+  LiteRtLmSamplerType type;
+  int32_t top_k;
+  float top_p;
+  float temperature;
+  int32_t seed;
+};
+
 namespace {
 
 absl::AnyInvocable<void(absl::StatusOr<litert::lm::Responses>)> CreateCallback(
@@ -330,8 +338,6 @@ void litert_lm_set_min_log_level(int level) {
 
 SamplerParameters::Type ToSamplerParametersType(LiteRtLmSamplerType type) {
   switch (type) {
-    case kLiteRtLmSamplerTypeUnspecified:
-      return SamplerParameters::TYPE_UNSPECIFIED;
     case kLiteRtLmSamplerTypeTopK:
       return SamplerParameters::TOP_K;
     case kLiteRtLmSamplerTypeTopP:
@@ -340,6 +346,49 @@ SamplerParameters::Type ToSamplerParametersType(LiteRtLmSamplerType type) {
       return SamplerParameters::GREEDY;
   }
   return SamplerParameters::TYPE_UNSPECIFIED;
+}
+
+LiteRtLmSamplerParams* litert_lm_sampler_params_create(
+    LiteRtLmSamplerType type) {
+  auto params = std::make_unique<LiteRtLmSamplerParams>();
+  params->type = type;
+  params->top_k = 0;
+  params->top_p = 0.0f;
+  params->temperature = 0.0f;
+  params->seed = 0;
+  return params.release();
+}
+
+void litert_lm_sampler_params_delete(LiteRtLmSamplerParams* params) {
+  delete params;
+}
+
+void litert_lm_sampler_params_set_top_k(LiteRtLmSamplerParams* params,
+                                        int32_t top_k) {
+  if (params) {
+    params->top_k = top_k;
+  }
+}
+
+void litert_lm_sampler_params_set_top_p(LiteRtLmSamplerParams* params,
+                                        float top_p) {
+  if (params) {
+    params->top_p = top_p;
+  }
+}
+
+void litert_lm_sampler_params_set_temperature(LiteRtLmSamplerParams* params,
+                                              float temperature) {
+  if (params) {
+    params->temperature = temperature;
+  }
+}
+
+void litert_lm_sampler_params_set_seed(LiteRtLmSamplerParams* params,
+                                       int32_t seed) {
+  if (params) {
+    params->seed = seed;
+  }
 }
 
 LiteRtLmSessionConfig* litert_lm_session_config_create() {

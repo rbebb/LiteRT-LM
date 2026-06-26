@@ -33,16 +33,6 @@ class c_string_p(ctypes.c_char_p):  # pylint: disable=invalid-name
     return obj
 
 
-class LiteRtLmSamplerParams(ctypes.Structure):
-  _fields_ = [
-      ("type", ctypes.c_int),
-      ("top_k", ctypes.c_int),
-      ("top_p", ctypes.c_float),
-      ("temperature", ctypes.c_float),
-      ("seed", ctypes.c_int),
-  ]
-
-
 class InputDataType(enum.IntEnum):
   TEXT = 0
   IMAGE = 1
@@ -57,7 +47,6 @@ class TokenUnionType(enum.IntEnum):
 
 
 class SamplerType(enum.IntEnum):
-  UNSPECIFIED = 0
   TOP_K = 1
   TOP_P = 2
   GREEDY = 3
@@ -232,6 +221,27 @@ def _setup_lib_signatures(lib):
   lib.litert_lm_engine_create.argtypes = [ctypes.c_void_p]
   lib.litert_lm_engine_delete.argtypes = [ctypes.c_void_p]
 
+  # Sampler Params
+  lib.litert_lm_sampler_params_create.restype = ctypes.c_void_p
+  lib.litert_lm_sampler_params_create.argtypes = [ctypes.c_int]
+  lib.litert_lm_sampler_params_delete.argtypes = [ctypes.c_void_p]
+  lib.litert_lm_sampler_params_set_top_k.argtypes = [
+      ctypes.c_void_p,
+      ctypes.c_int,
+  ]
+  lib.litert_lm_sampler_params_set_top_p.argtypes = [
+      ctypes.c_void_p,
+      ctypes.c_float,
+  ]
+  lib.litert_lm_sampler_params_set_temperature.argtypes = [
+      ctypes.c_void_p,
+      ctypes.c_float,
+  ]
+  lib.litert_lm_sampler_params_set_seed.argtypes = [
+      ctypes.c_void_p,
+      ctypes.c_int,
+  ]
+
   # Session Config
   lib.litert_lm_session_config_create.restype = ctypes.c_void_p
   lib.litert_lm_session_config_create.argtypes = []
@@ -246,7 +256,7 @@ def _setup_lib_signatures(lib):
   ]
   lib.litert_lm_session_config_set_sampler_params.argtypes = [
       ctypes.c_void_p,
-      ctypes.POINTER(LiteRtLmSamplerParams),
+      ctypes.c_void_p,
   ]
   lib.litert_lm_session_config_set_lora_path.restype = ctypes.c_int
   lib.litert_lm_session_config_set_lora_path.argtypes = [

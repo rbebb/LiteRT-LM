@@ -97,6 +97,9 @@ using JsonResponsePtr =
 using SessionConfigPtr =
     std::unique_ptr<LiteRtLmSessionConfig,
                     decltype(&litert_lm_session_config_delete)>;
+using SamplerParamsPtr =
+    std::unique_ptr<LiteRtLmSamplerParams,
+                    decltype(&litert_lm_sampler_params_delete)>;
 using ConversationConfigPtr =
     std::unique_ptr<LiteRtLmConversationConfig,
                     decltype(&litert_lm_conversation_config_delete)>;
@@ -308,17 +311,20 @@ TEST(EngineCTest, CreateSettingsFromRawFileDescriptor) {
 }
 
 TEST(EngineCTest, CreateSessionConfigWithSamplerParams) {
-  LiteRtLmSamplerParams sampler_params;
-  sampler_params.type = kLiteRtLmSamplerTypeTopP;
-  sampler_params.top_k = 10;
-  sampler_params.top_p = 0.5f;
-  sampler_params.temperature = 0.1f;
-  sampler_params.seed = 1234;
+  SamplerParamsPtr sampler_params(
+      litert_lm_sampler_params_create(kLiteRtLmSamplerTypeTopP),
+      &litert_lm_sampler_params_delete);
+  ASSERT_NE(sampler_params, nullptr);
+  litert_lm_sampler_params_set_top_k(sampler_params.get(), 10);
+  litert_lm_sampler_params_set_top_p(sampler_params.get(), 0.5f);
+  litert_lm_sampler_params_set_temperature(sampler_params.get(), 0.1f);
+  litert_lm_sampler_params_set_seed(sampler_params.get(), 1234);
 
   SessionConfigPtr config(litert_lm_session_config_create(),
                           &litert_lm_session_config_delete);
   ASSERT_NE(config, nullptr);
-  litert_lm_session_config_set_sampler_params(config.get(), &sampler_params);
+  litert_lm_session_config_set_sampler_params(config.get(),
+                                              sampler_params.get());
 
   const auto& params = config->config->GetSamplerParams();
   EXPECT_EQ(params.k(), 10);
@@ -371,17 +377,19 @@ TEST(EngineCTest, CreateConversationConfig) {
   ASSERT_NE(engine, nullptr);
 
   // 2. Create Sampler Params.
-  LiteRtLmSamplerParams sampler_params;
-  sampler_params.type = kLiteRtLmSamplerTypeTopP;
-  sampler_params.top_k = 10;
-  sampler_params.top_p = 0.5f;
-  sampler_params.temperature = 0.1f;
-  sampler_params.seed = 1234;
+  SamplerParamsPtr sampler_params(
+      litert_lm_sampler_params_create(kLiteRtLmSamplerTypeTopP),
+      &litert_lm_sampler_params_delete);
+  ASSERT_NE(sampler_params, nullptr);
+  litert_lm_sampler_params_set_top_k(sampler_params.get(), 10);
+  litert_lm_sampler_params_set_top_p(sampler_params.get(), 0.5f);
+  litert_lm_sampler_params_set_temperature(sampler_params.get(), 0.1f);
+  litert_lm_sampler_params_set_seed(sampler_params.get(), 1234);
   SessionConfigPtr session_config(litert_lm_session_config_create(),
                                   &litert_lm_session_config_delete);
   ASSERT_NE(session_config, nullptr);
   litert_lm_session_config_set_sampler_params(session_config.get(),
-                                              &sampler_params);
+                                              sampler_params.get());
 
   // 3. Create a Conversation Config with the Engine Handle, Session Config
   // and System Message.
@@ -728,17 +736,19 @@ TEST(EngineCTest, CreateConversationConfigWithNoSystemMessage) {
   ASSERT_NE(engine, nullptr);
 
   // 2. Create Sampler Params.
-  LiteRtLmSamplerParams sampler_params;
-  sampler_params.type = kLiteRtLmSamplerTypeTopP;
-  sampler_params.top_k = 10;
-  sampler_params.top_p = 0.5f;
-  sampler_params.temperature = 0.1f;
-  sampler_params.seed = 1234;
+  SamplerParamsPtr sampler_params(
+      litert_lm_sampler_params_create(kLiteRtLmSamplerTypeTopP),
+      &litert_lm_sampler_params_delete);
+  ASSERT_NE(sampler_params, nullptr);
+  litert_lm_sampler_params_set_top_k(sampler_params.get(), 10);
+  litert_lm_sampler_params_set_top_p(sampler_params.get(), 0.5f);
+  litert_lm_sampler_params_set_temperature(sampler_params.get(), 0.1f);
+  litert_lm_sampler_params_set_seed(sampler_params.get(), 1234);
   SessionConfigPtr session_config(litert_lm_session_config_create(),
                                   &litert_lm_session_config_delete);
   ASSERT_NE(session_config, nullptr);
   litert_lm_session_config_set_sampler_params(session_config.get(),
-                                              &sampler_params);
+                                              sampler_params.get());
 
   // 3. Create a Conversation Config with the Session Config.
   ConversationConfigPtr conversation_config(
@@ -1047,17 +1057,19 @@ TEST(EngineCTest, ConversationSendMessageWithConfig) {
   ASSERT_NE(engine, nullptr);
 
   // 2. Create Sampler Params.
-  LiteRtLmSamplerParams sampler_params;
-  sampler_params.type = kLiteRtLmSamplerTypeTopP;
-  sampler_params.top_k = 10;
-  sampler_params.top_p = 0.5f;
-  sampler_params.temperature = 0.1f;
-  sampler_params.seed = 1234;
+  SamplerParamsPtr sampler_params(
+      litert_lm_sampler_params_create(kLiteRtLmSamplerTypeTopP),
+      &litert_lm_sampler_params_delete);
+  ASSERT_NE(sampler_params, nullptr);
+  litert_lm_sampler_params_set_top_k(sampler_params.get(), 10);
+  litert_lm_sampler_params_set_top_p(sampler_params.get(), 0.5f);
+  litert_lm_sampler_params_set_temperature(sampler_params.get(), 0.1f);
+  litert_lm_sampler_params_set_seed(sampler_params.get(), 1234);
   SessionConfigPtr session_config(litert_lm_session_config_create(),
                                   &litert_lm_session_config_delete);
   ASSERT_NE(session_config, nullptr);
   litert_lm_session_config_set_sampler_params(session_config.get(),
-                                              &sampler_params);
+                                              sampler_params.get());
 
   // 3. Create a Conversation Config with the Session Config
   // and System Message.
