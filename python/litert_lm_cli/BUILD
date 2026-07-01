@@ -228,6 +228,10 @@ pytype_strict_binary(
         "noios",
         "nowindows",
     ],
+    visibility = [
+        "//learning/language/tunelab/gemma:__subpackages__",
+        "//:__subpackages__",
+    ],
     deps = [
         ":main_lib",
     ],
