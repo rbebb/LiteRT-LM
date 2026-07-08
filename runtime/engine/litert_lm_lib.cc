@@ -325,6 +325,9 @@ absl::Status RunSingleTurnSession(const std::string& input_prompt,
     decode_config.SetRepetitionPenaltyConfig(
         settings.repetition_penalty_config);
   }
+  if (settings.no_repeat_ngram_config.enabled()) {
+    decode_config.SetNoRepeatNgramConfig(settings.no_repeat_ngram_config);
+  }
   if (settings.suppress_tokens_config.enabled()) {
     decode_config.SetSuppressTokensConfig(settings.suppress_tokens_config);
   }

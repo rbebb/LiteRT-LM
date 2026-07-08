@@ -151,6 +151,7 @@ cc_library(
         "@nlohmann_json//:json",
         "@litert//litert/cc/internal:scoped_file",
         "@litert//support/tokenizer",
+        "//runtime/components/logits_processor:no_repeat_ngram_config",
         "//runtime/components/logits_processor:repetition_penalty_config",
         "//runtime/components/logits_processor:suppress_tokens_config",
         "//runtime/components/logits_processor/constrained_decoding:constraint",
