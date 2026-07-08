@@ -38,6 +38,7 @@ export const SettingsSchema = z.object({
   topK: z.number().int().nonnegative(),
   enableThinking: z.boolean(),
   customModels: z.array(CustomModelSchema).default([]),
+  localDirModels: z.array(CustomModelSchema).default([]),
 });
 
 /** Schema for partial settings, used for parsing saved settings. */
@@ -77,6 +78,7 @@ export class SettingsStore implements Settings {
   topK = 64;
   enableThinking = true;
   customModels: CustomModel[] = [];
+  localDirModels: CustomModel[] = [];
 
   private readonly SETTINGS_KEY = 'litertlm-chat-settings';
 
@@ -103,6 +105,7 @@ export class SettingsStore implements Settings {
           this.topK = validated.topK ?? this.topK;
           this.enableThinking = validated.enableThinking ?? this.enableThinking;
           this.customModels = validated.customModels ?? [];
+          this.localDirModels = validated.localDirModels ?? [];
         } else {
           console.warn(
               '[LiteRT-LM] Invalid settings in LocalStorage, using defaults:',
@@ -126,6 +129,7 @@ export class SettingsStore implements Settings {
         topK: this.topK,
         enableThinking: this.enableThinking,
         customModels: this.customModels,
+        localDirModels: this.localDirModels,
       };
       window.localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(payload));
       this.updateCallback();

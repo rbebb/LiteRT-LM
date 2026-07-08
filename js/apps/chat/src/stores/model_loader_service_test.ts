@@ -41,7 +41,7 @@ describe('ModelLoaderService', () => {
     };
     fakeLoadWasm = async () => ({} as LiteRtLm);
     modelLoader = new ModelLoaderService(
-        () => {}, settingsStore, (msg: string) => {}, fakeEngineCreate,
+        () => {}, settingsStore, (msg: string) => {}, undefined, fakeEngineCreate,
         fakeLoadWasm);
   });
 
@@ -70,7 +70,7 @@ describe('ModelLoaderService', () => {
     let updateCalled = false;
     modelLoader = new ModelLoaderService(() => {
       updateCalled = true;
-    }, settingsStore, (msg: string) => {}, fakeEngineCreate, fakeLoadWasm);
+    }, settingsStore, (msg: string) => {}, undefined, fakeEngineCreate, fakeLoadWasm);
 
     const mockCache = {
       keys: jasmine.createSpy().and.resolveTo([
@@ -254,7 +254,7 @@ describe('ModelLoaderService', () => {
     modelLoader =
         new ModelLoaderService(() => {}, settingsStore, (msg: string) => {
           latestStatus = msg;
-        }, fakeEngineCreate, fakeLoadWasm);
+        }, undefined, fakeEngineCreate, fakeLoadWasm);
 
     const onModelLoaded = jasmine.createSpy('onModelLoaded').and.resolveTo();
 
@@ -331,5 +331,26 @@ describe('ModelLoaderService', () => {
     expect(settingsStore.customModels.length).toBe(0);
     expect(settingsStore.saveSettings).toHaveBeenCalled();
     expect(modelLoader.updateCacheSize).toHaveBeenCalled();
+  });
+
+  it('loadModelWeights loads from local directory', async () => {
+    settingsStore.selectedModelPath = 'local-dir://gemma.litertlm';
+
+    const mockFile = new File(['model data'], 'gemma.litertlm', {type: 'application/octet-stream'});
+    const mockLocalDirService = jasmine.createSpyObj('LocalDirectoryService', ['getFile']);
+    mockLocalDirService.getFile.and.resolveTo(mockFile);
+
+    modelLoader = new ModelLoaderService(
+        () => {}, settingsStore, (msg: string) => {}, mockLocalDirService,
+        fakeEngineCreate, fakeLoadWasm);
+
+    const onModelLoaded = jasmine.createSpy('onModelLoaded').and.resolveTo();
+
+    await modelLoader.loadModelWeights(onModelLoaded);
+
+    expect(mockLocalDirService.getFile).toHaveBeenCalledWith('local-dir://gemma.litertlm');
+    expect(modelLoader.engine).toBeDefined();
+    expect(onModelLoaded).toHaveBeenCalled();
+    expect(modelLoader.isModelLoading).toBeFalse();
   });
 });
