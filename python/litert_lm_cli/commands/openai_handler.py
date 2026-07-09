@@ -45,9 +45,9 @@ from litert_lm_cli import (
 from litert_lm_cli.commands import serve_util
 
 
-def _dump_json(data: Any) -> str:
+def _dump_json(data: Any, *, indent: int | None = None) -> str:
   """Dumps data to a JSON string, ensuring non-ASCII characters are handled."""
-  return json.dumps(data, ensure_ascii=False)
+  return json.dumps(data, ensure_ascii=False, indent=indent)
 
 
 def _sse_data(data: str, event: str | None = None) -> bytes:
@@ -782,9 +782,7 @@ class OpenAIHandler(serve_util.CORSRequestHandler):
       self.send_response(200)
       self.send_header("Content-Type", "application/json")
       self.end_headers()
-      self.wfile.write(
-          json.dumps(resp_body, ensure_ascii=False).encode("utf-8")
-      )
+      self.wfile.write((_dump_json(resp_body, indent=2) + "\n").encode("utf-8"))
       return
 
     include_usage = bool(
@@ -860,7 +858,7 @@ class OpenAIHandler(serve_util.CORSRequestHandler):
       self.send_header("Content-Type", "application/json")
       self.end_headers()
       self.wfile.write(
-          json.dumps(dataclasses.asdict(resp_body), ensure_ascii=False).encode(
+          (_dump_json(dataclasses.asdict(resp_body), indent=2) + "\n").encode(
               "utf-8"
           )
       )
@@ -899,9 +897,7 @@ class OpenAIHandler(serve_util.CORSRequestHandler):
       self.send_response(200)
       self.send_header("Content-Type", "application/json")
       self.end_headers()
-      self.wfile.write(
-          json.dumps(resp_body, ensure_ascii=False).encode("utf-8")
-      )
+      self.wfile.write((_dump_json(resp_body, indent=2) + "\n").encode("utf-8"))
     except Exception as e:  # pylint: disable=broad-exception-caught
       click.echo(
           click.style(
