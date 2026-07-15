@@ -750,12 +750,13 @@ absl::Status LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunPrefill(
     output_buffers[output_name] = std::move(output_buffer_dup);
   }
 
+  litert::Options run_options = GetRunOptions();
   if (async) {
     LITERT_RETURN_IF_ERROR(compiled_model_->RunAsync(
-        prefill_signature, input_buffers, output_buffers, async));
+        prefill_signature, input_buffers, output_buffers, async, &run_options));
   } else {
-    LITERT_RETURN_IF_ERROR(
-        compiled_model_->Run(prefill_signature, input_buffers, output_buffers));
+    LITERT_RETURN_IF_ERROR(compiled_model_->Run(
+        prefill_signature, input_buffers, output_buffers, &run_options));
   }
 
   if (!gpu_optimized_single_buffer_cache_) {
@@ -962,10 +963,11 @@ absl::Status LlmLiteRtCompiledModelExecutorBase::BindTensorsAndRunDecode(
     decode_output_buffers[output_name] = std::move(output_buffer_dup);
   }
 
+  litert::Options run_options = GetRunOptions();
   bool async = true;
   LITERT_RETURN_IF_ERROR(
       compiled_model_->RunAsync(kDecodeSignatureRunner, decode_input_buffers,
-                                decode_output_buffers, async));
+                                decode_output_buffers, async, &run_options));
 
   if (!gpu_optimized_single_buffer_cache_) {
     std::swap(input_kv_cache_buffers_, output_kv_cache_buffers_);
@@ -1501,6 +1503,22 @@ absl::Status LlmLiteRtCompiledModelExecutorBase::UpdateExecutorSettings(
   absl::MutexLock lock(executor_settings_mutex_);
   executor_settings_ = executor_settings;
   return absl::OkStatus();
+}
+
+litert::Options LlmLiteRtCompiledModelExecutorBase::GetRunOptions() const {
+  absl::MutexLock lock(executor_settings_mutex_);
+  litert::Options run_options;
+  if (executor_settings_.GetAdvancedSettings().has_value()) {
+#if defined(__APPLE__)
+    const auto& advanced_settings = *executor_settings_.GetAdvancedSettings();
+    auto gpu_options = run_options.GetGpuOptions();
+    if (gpu_options.HasValue()) {
+      (void)gpu_options->EnableMetalResidencySet(
+          advanced_settings.gpu_enable_metal_residency_set);
+    }
+#endif
+  }
+  return run_options;
 }
 
 absl::Status LlmLiteRtCompiledModelExecutorBase::SetCurrentStep(int new_step) {

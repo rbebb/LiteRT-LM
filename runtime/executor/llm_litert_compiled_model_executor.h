@@ -319,6 +319,9 @@ class LlmLiteRtCompiledModelExecutorBase : public LlmExecutor {
       const absl::flat_hash_map<absl::string_view, TensorBuffer>&
           kv_cache_buffers);
 
+  // Gets the LiteRT run options based on the current executor settings.
+  litert::Options GetRunOptions() const;
+
   mutable absl::Mutex executor_settings_mutex_;
   LlmExecutorSettings executor_settings_
       ABSL_GUARDED_BY(executor_settings_mutex_);
